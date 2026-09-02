@@ -7,6 +7,9 @@ Sibling of [eNMEA](../eNMEA). Where that answers *"is this NMEA feed alive and
 correct?"*, eAIS answers *"what is out there?"* — a target list of
 name/MMSI/speed/course, and a north-up plot of where they are relative to you.
 
+**[Install it from your browser](https://cffinch62.github.io/eAIS/)** — no
+toolchain needed. Operation is covered in **[USER_GUIDE.md](USER_GUIDE.md)**.
+
 ![The eAIS list view: five vessels with name, MMSI, speed, course, range and
 bearing.](docs/images/list-view.jpg)
 
@@ -86,18 +89,22 @@ model) and `ui/Draw.*` (plot primitives eNMEA has no use for).
 
 ## Browser installer
 
-`docs/` is an [ESP Web Tools](https://esphome.github.io/esp-web-tools/) page:
-plug the X3 into a computer, open it in Chrome or Edge, press Install. No
-Python, no PlatformIO, no command line. Rebuild after a firmware change with:
+### [→ Install eAIS from your browser](https://cffinch62.github.io/eAIS/)
+
+Plug the X3 into a computer, open that page in Chrome or Edge, and press
+Install. No Python, no PlatformIO, no drivers, no command line. It is
+[ESP Web Tools](https://esphome.github.io/esp-web-tools/) served from `docs/`
+by GitHub Pages, over the HTTPS that Web Serial requires.
+
+Rebuild it after a firmware change:
 
 ```sh
 scripts/build_web_installer.sh
 git add docs && git commit && git push
 ```
 
-Serve it from GitHub Pages (`main` branch, `/docs`). The same merged image
-flashes with `esptool --chip esp32c3 write-flash 0x0 docs/firmware/eAIS-x3-*.bin`
-for anyone who prefers a terminal.
+The same merged image flashes from a terminal with
+`esptool --chip esp32c3 write-flash 0x0 docs/firmware/eAIS-x3-*.bin`.
 
 **Open the hosted URL, not `docs/index.html` from disk.** A `file://` page has
 no web origin, so the manifest fetch is blocked and the installer reports
