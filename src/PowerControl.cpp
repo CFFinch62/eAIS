@@ -1,4 +1,4 @@
-// SHARED WITH eNMEA - copied from eNMEA/src/PowerControl.cpp at f2c1fb5.
+// SHARED WITH eNMEA - copied from eNMEA/src/PowerControl.cpp at 900c286.
 //
 // Edit the eNMEA copy first when fixing something that affects both, then
 // re-copy. `scripts/check_shared.py` reports when the two have drifted.
@@ -14,10 +14,11 @@
 #include <driver/gpio.h>
 #include <esp_sleep.h>
 
+#include "Product.h"
 #include "ui/EinkCanvas.h"
 
 [[noreturn]] void powerOff(EinkCanvas& canvas) {
-  Serial.println("[eNMEA] Power button held - shutting down");
+  Serial.println(LOG_TAG "Power button held - shutting down");
   Serial.flush();
 
   // E-ink keeps its last image with the rails down, so this is literally what

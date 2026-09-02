@@ -23,7 +23,7 @@ ENMEA = HERE.parent / "eNMEA"
 
 # Files copied from eNMEA. Anything not listed here is eAIS's own.
 SHARED = [
-    "src/BoardPins.h", "src/PowerControl.h", "src/PowerControl.cpp",
+    "src/BoardPins.h", "src/Product.h", "src/PowerControl.h", "src/PowerControl.cpp",
     "src/nmea/NmeaLineReader.h", "src/nmea/NmeaLineReader.cpp",
     "src/settings/AppSettings.h", "src/settings/AppSettings.cpp",
     "src/settings/ProvisioningPortal.h", "src/settings/ProvisioningPortal.cpp",

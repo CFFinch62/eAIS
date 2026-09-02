@@ -1,4 +1,4 @@
-// SHARED WITH eNMEA - copied from eNMEA/src/settings/ProvisioningPortal.cpp at f2c1fb5.
+// SHARED WITH eNMEA - copied from eNMEA/src/settings/ProvisioningPortal.cpp at 6db3850.
 //
 // Edit the eNMEA copy first when fixing something that affects both, then
 // re-copy. `scripts/check_shared.py` reports when the two have drifted.
@@ -31,7 +31,7 @@ void configureApSubnet() {
 // need when nothing else works.
 constexpr char PAGE_HEAD[] =
     "<!doctype html><html><head><meta name='viewport' content='width=device-width,initial-scale=1'>"
-    "<title>eNMEA Setup</title>"
+    "<title>" SETUP_PRODUCT_NAME " Setup</title>"
     "<style>body{font-family:sans-serif;max-width:420px;margin:2em auto;padding:0 1em}"
     "label{display:block;margin-top:1em;font-weight:bold}"
     "input,select{width:100%;padding:.5em;box-sizing:border-box}"
@@ -46,7 +46,7 @@ constexpr char PAGE_HEAD[] =
     "tr.active{background:#eef6ee;font-weight:600}"
     "button.link{background:none;border:0;color:#06c;text-decoration:underline;cursor:pointer;padding:0;margin:0;font-size:1em}"
     "h3{margin:1.6em 0 0}</style></head><body>"
-    "<h2>eNMEA Setup</h2>";
+    "<h2>" SETUP_PRODUCT_NAME " Setup</h2>";
 
 constexpr char PAGE_FORM_TAIL[] =
     "<button type='submit' name='save' value='1'>Save</button> "
@@ -180,7 +180,7 @@ void handleSave() {
   if (!cfg.hasActive()) cfg.activeIndex = static_cast<int8_t>(cfg.firstUsed());
   saveAppSettings(cfg);
 
-  Serial.printf("[eNMEA] Saved profile %d '%s' ssid='%s' proto=%s host='%s' port=%u%s\n", slot + 1,
+  Serial.printf(LOG_TAG "Saved profile %d '%s' ssid='%s' proto=%s host='%s' port=%u%s\n", slot + 1,
                 cfg.profiles[slot].name, cfg.profiles[slot].ssid,
                 cfg.profiles[slot].protocol == NmeaProfile::Protocol::TCP ? "TCP" : "UDP", cfg.profiles[slot].host,
                 cfg.profiles[slot].port, useNow ? " (applying)" : "");
@@ -210,7 +210,7 @@ void handleUse() {
   }
   cfg.activeIndex = static_cast<int8_t>(slot);
   saveAppSettings(cfg);
-  Serial.printf("[eNMEA] Switching to profile %d '%s'\n", slot + 1, cfg.profiles[slot].name);
+  Serial.printf(LOG_TAG "Switching to profile %d '%s'\n", slot + 1, cfg.profiles[slot].name);
   server.send(200, "text/html",
               "<html><body><h3>Switching...</h3>"
               "<p>The device is reconnecting; this page returns in a few seconds.</p></body></html>");
@@ -219,7 +219,7 @@ void handleUse() {
 }
 
 void handleForget() {
-  Serial.println("[eNMEA] All profiles erased from the setup page - rebooting into setup mode");
+  Serial.println(LOG_TAG "All profiles erased from the setup page - rebooting into setup mode");
   clearAppSettings();
   server.send(200, "text/html",
               "<html><body><h3>All profiles erased. Rebooting into setup mode...</h3>"
@@ -241,7 +241,7 @@ void ProvisioningPortal::beginAsAccessPoint() {
   WiFi.mode(WIFI_AP);
   configureApSubnet();
   WiFi.softAP(SETUP_AP_SSID);
-  Serial.printf("[eNMEA] Setup AP '%s' up at http://%s/\n", SETUP_AP_SSID, WiFi.softAPIP().toString().c_str());
+  Serial.printf(LOG_TAG "Setup AP '%s' up at http://%s/\n", SETUP_AP_SSID, WiFi.softAPIP().toString().c_str());
   setupRoutes();
 }
 
@@ -253,7 +253,7 @@ void ProvisioningPortal::beginOnStation() {
   WiFi.mode(WIFI_AP_STA);
   configureApSubnet();
   WiFi.softAP(SETUP_AP_SSID);
-  Serial.printf("[eNMEA] Settings page: http://%s/ (LAN) and http://%s/ via AP '%s'\n",
+  Serial.printf(LOG_TAG "Settings page: http://%s/ (LAN) and http://%s/ via AP '%s'\n",
                 WiFi.localIP().toString().c_str(), WiFi.softAPIP().toString().c_str(), SETUP_AP_SSID);
   setupRoutes();
 }
