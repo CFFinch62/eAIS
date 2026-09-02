@@ -162,17 +162,22 @@ void AisViews::drawTargetSymbol(int cx, int cy, float cogDeg, bool aging) {
   // A triangle pointing along COG, which is the one thing a glance should
   // convey. Aging targets are drawn as an outline only: still there, position
   // no longer fresh.
+  // Sized generously: on a 1-bit panel at arm's length a small outline reads as
+  // a smudge, and the first version was too small to judge placement by eye.
   int nx = 0, ny = 0, lx = 0, ly = 0, rx = 0, ry = 0;
-  bearingToXY(cogDeg, 9.0f, nx, ny);
-  bearingToXY(cogDeg + 140.0f, 7.0f, lx, ly);
-  bearingToXY(cogDeg - 140.0f, 7.0f, rx, ry);
+  bearingToXY(cogDeg, 16.0f, nx, ny);
+  bearingToXY(cogDeg + 143.0f, 12.0f, lx, ly);
+  bearingToXY(cogDeg - 143.0f, 12.0f, rx, ry);
 
-  drawLine(canvas_, cx + nx, cy + ny, cx + lx, cy + ly, true);
-  drawLine(canvas_, cx + nx, cy + ny, cx + rx, cy + ry, true);
-  drawLine(canvas_, cx + lx, cy + ly, cx + rx, cy + ry, true);
-  if (!aging) {
-    canvas_.fillRect(cx - 1, cy - 1, 3, 3, true);
+  // Drawn twice, one pixel apart: e-ink has no anti-aliasing, and a
+  // single-pixel outline vanishes against the range rings.
+  for (int pass = 0; pass < 2; ++pass) {
+    drawLine(canvas_, cx + nx + pass, cy + ny, cx + lx + pass, cy + ly, true);
+    drawLine(canvas_, cx + nx + pass, cy + ny, cx + rx + pass, cy + ry, true);
+    drawLine(canvas_, cx + lx + pass, cy + ly, cx + rx + pass, cy + ry, true);
   }
+  // A fresh position gets a solid centre; an aging one stays hollow.
+  if (!aging) canvas_.fillRect(cx - 3, cy - 3, 7, 7, true);
 }
 
 void AisViews::drawPlot(const AisTargetTable& targets, const OwnShip& own, const ViewState& view,
@@ -202,7 +207,22 @@ void AisViews::drawPlot(const AisTargetTable& targets, const OwnShip& own, const
   canvas_.drawText(cx + 4, cy - maxRadius - 16, label, TEXT_FINE, true);
   std::snprintf(label, sizeof(label), "%.1f", static_cast<double>(view.rangeNm() / 2.0f));
   canvas_.drawText(cx + 4, cy - maxRadius / 2 - 16, label, TEXT_FINE, true);
-  canvas_.drawText(cx - 6, top, "N", TEXT_BODY, true);
+
+  // Bearing scale. Without a reference on the ring there is no way to check by
+  // eye whether a target sits where its bearing says - which is the whole point
+  // of being able to trust the plot.
+  for (int brg = 0; brg < 360; brg += 30) {
+    int ox = 0, oy = 0, ix = 0, iy = 0;
+    bearingToXY(static_cast<float>(brg), static_cast<float>(maxRadius), ox, oy);
+    bearingToXY(static_cast<float>(brg), static_cast<float>(maxRadius - (brg % 90 == 0 ? 14 : 7)), ix, iy);
+    drawLine(canvas_, cx + ix, cy + iy, cx + ox, cy + oy, true);
+  }
+  const char* cardinals[4] = {"N", "E", "S", "W"};
+  for (int i = 0; i < 4; ++i) {
+    int lx = 0, ly = 0;
+    bearingToXY(static_cast<float>(i * 90), static_cast<float>(maxRadius + 16), lx, ly);
+    canvas_.drawText(cx + lx - 5, cy + ly - 7, cardinals[i], TEXT_BODY, true);
+  }
 
   // Own ship: a cross at the centre, with a heading line when known.
   canvas_.drawHLine(cx - 6, cy, 13, true);
@@ -214,6 +234,8 @@ void AisViews::drawPlot(const AisTargetTable& targets, const OwnShip& own, const
 
   const float scalePxPerNm = static_cast<float>(maxRadius) / view.rangeNm();
   int plotted = 0, offScale = 0;
+  // Bearing/range labels help until the plot is busy, then they become noise.
+  const bool uncrowded = targets.positionCount(nowMs) <= 8;
   for (int i = 0; i < targets.count; ++i) {
     const AisTarget& t = targets.entries[i];
     if (!t.hasPosition || t.isStale(nowMs)) continue;
@@ -230,13 +252,21 @@ void AisViews::drawPlot(const AisTargetTable& targets, const OwnShip& own, const
 
     // Label with the name when there is one, otherwise the MMSI's last digits -
     // enough to tell two symbols apart without crowding the plot.
-    char tag[16];
+    char tag[20];
     if (t.hasName()) {
-      std::snprintf(tag, sizeof(tag), "%.8s", t.name);
+      std::snprintf(tag, sizeof(tag), "%.10s", t.name);
     } else {
       std::snprintf(tag, sizeof(tag), "%lu", static_cast<unsigned long>(t.mmsi % 10000));
     }
-    canvas_.drawText(cx + dx + 10, cy + dy - 3, tag, TEXT_FINE, true);
+    canvas_.drawText(cx + dx + 18, cy + dy - 10, tag, TEXT_FINE, true);
+    // On an uncrowded plot, print each target's bearing and range beside it.
+    // That is what makes placement verifiable: the number and the position must
+    // agree, so a wrong projection shows up immediately instead of looking
+    // plausible.
+    if (uncrowded) {
+      std::snprintf(tag, sizeof(tag), "%03.0f/%.2f", static_cast<double>(brg), static_cast<double>(rng));
+      canvas_.drawText(cx + dx + 18, cy + dy + 2, tag, TEXT_FINE, true);
+    }
     ++plotted;
   }
 
