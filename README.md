@@ -7,6 +7,18 @@ Sibling of [eNMEA](../eNMEA). Where that answers *"is this NMEA feed alive and
 correct?"*, eAIS answers *"what is out there?"* — a target list of
 name/MMSI/speed/course, and a north-up plot of where they are relative to you.
 
+![The eAIS list view: five vessels with name, MMSI, speed, course, range and
+bearing.](docs/images/list-view.jpg)
+
+![The eAIS plot view: range rings with bearing marks, own vessel centred, and
+target symbols labelled with name, bearing and range.](docs/images/plot-view.jpg)
+
+*Live on an X3, fed by `scripts/ais_test_server.py`. The plot labels each target
+with its own bearing and range, so the picture can be checked against the
+numbers — `SEA SPRITE 232/0.51` is drawn down and left, as 232° should be.*
+
+See **[USER_GUIDE.md](USER_GUIDE.md)** for operation.
+
 ## What it does
 
 - Connects to an AIS unit's Wi-Fi output over UDP or TCP, using the same

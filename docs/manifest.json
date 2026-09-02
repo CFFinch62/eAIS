@@ -1,12 +1,12 @@
 {
   "name": "eAIS (Xteink X3)",
-  "version": "3494169",
+  "version": "6c95a07-dirty",
   "new_install_prompt_erase": true,
   "builds": [
     {
       "chipFamily": "ESP32-C3",
       "parts": [
-        { "path": "firmware/eAIS-x3-3494169.bin", "offset": 0 }
+        { "path": "firmware/eAIS-x3-6c95a07-dirty.bin", "offset": 0 }
       ]
     }
   ]

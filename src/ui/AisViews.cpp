@@ -186,7 +186,9 @@ void AisViews::drawPlot(const AisTargetTable& targets, const OwnShip& own, const
   const int bottom = contentBottom(canvas_);
   const int cx = canvas_.width() / 2;
   const int cy = (top + bottom) / 2;
-  const int maxRadius = ((bottom - top) / 2) - 12;
+  // Leaves room for the cardinal labels drawn 16px outside the ring, plus their
+  // own height. At -12 the 'S' landed on top of the footer text.
+  const int maxRadius = ((bottom - top) / 2) - 28;
 
   if (!own.hasPosition) {
     // Without an own position there is nothing to plot around. Say why, and
@@ -203,10 +205,12 @@ void AisViews::drawPlot(const AisTargetTable& targets, const OwnShip& own, const
   drawCircle(canvas_, cx, cy, maxRadius, true);
   drawCircle(canvas_, cx, cy, maxRadius / 2, true);
   char label[16];
+  // Offset clear of the vertical axis: the 'N' cardinal sits on it, and at
+  // cx+4 the outer ring's range label was printed straight through it.
   std::snprintf(label, sizeof(label), "%.1f", static_cast<double>(view.rangeNm()));
-  canvas_.drawText(cx + 4, cy - maxRadius - 16, label, TEXT_FINE, true);
+  canvas_.drawText(cx + 14, cy - maxRadius - 16, label, TEXT_FINE, true);
   std::snprintf(label, sizeof(label), "%.1f", static_cast<double>(view.rangeNm() / 2.0f));
-  canvas_.drawText(cx + 4, cy - maxRadius / 2 - 16, label, TEXT_FINE, true);
+  canvas_.drawText(cx + 14, cy - maxRadius / 2 - 16, label, TEXT_FINE, true);
 
   // Bearing scale. Without a reference on the ring there is no way to check by
   // eye whether a target sits where its bearing says - which is the whole point
@@ -258,14 +262,16 @@ void AisViews::drawPlot(const AisTargetTable& targets, const OwnShip& own, const
     } else {
       std::snprintf(tag, sizeof(tag), "%lu", static_cast<unsigned long>(t.mmsi % 10000));
     }
-    canvas_.drawText(cx + dx + 18, cy + dy - 10, tag, TEXT_FINE, true);
+    const int labelX = (dx >= 0) ? cx + dx + 18 : cx + dx - 18 - canvas_.textWidth(tag, TEXT_FINE);
+    canvas_.drawText(labelX, cy + dy - 10, tag, TEXT_FINE, true);
     // On an uncrowded plot, print each target's bearing and range beside it.
     // That is what makes placement verifiable: the number and the position must
     // agree, so a wrong projection shows up immediately instead of looking
     // plausible.
     if (uncrowded) {
       std::snprintf(tag, sizeof(tag), "%03.0f/%.2f", static_cast<double>(brg), static_cast<double>(rng));
-      canvas_.drawText(cx + dx + 18, cy + dy + 2, tag, TEXT_FINE, true);
+      const int brgX = (dx >= 0) ? cx + dx + 18 : cx + dx - 18 - canvas_.textWidth(tag, TEXT_FINE);
+      canvas_.drawText(brgX, cy + dy + 2, tag, TEXT_FINE, true);
     }
     ++plotted;
   }
