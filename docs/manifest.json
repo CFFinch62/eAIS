@@ -1,0 +1,13 @@
+{
+  "name": "eAIS (Xteink X3)",
+  "version": "dc876b0-dirty",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        { "path": "firmware/eAIS-x3-dc876b0-dirty.bin", "offset": 0 }
+      ]
+    }
+  ]
+}
